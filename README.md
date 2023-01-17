@@ -1,2 +1,2 @@
 # silk
-Lua-based web framework for  luafcgi server
+Lua-based web framework for  [luafcgi](https://github.com/lxsang/luafcgi) fast CGI server
