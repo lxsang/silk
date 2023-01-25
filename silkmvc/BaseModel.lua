@@ -30,9 +30,7 @@ function BaseModel:find(cond)
 end
 
 function BaseModel:get(id)
-    local data, order = self:find({exp = {["="] = {id = id}}})
-    if not data or #order == 0 then return false end
-    return data[1]
+    return self.db:get(self.name, id)
 end
 
 function BaseModel:findAll()
@@ -46,6 +44,7 @@ function BaseModel:query(sql)
 end
 
 function BaseModel:select(sel, sql_cnd)
-    if self.db then return self.db:select(self.name, sel, sql_cnd) end
+    local sql = string.format("SELECT %s FROM %s WHERE %s;", sel, self.name, sql_cnd)
+    if self.db then return self.db:query(sql) end
     return nil
 end

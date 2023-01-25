@@ -22,16 +22,14 @@ silk_DATA = silkmvc/router.lua.tpl \
     silkmvc/Template.lua \
     silkmvc/Logger.lua \
     silkmvc/BaseObject.lua \
-    silkmvc/DBHelper.lua \
     silkmvc/api.lua
 
 coredir = $(libdir)/lua/silk/core
 core_DATA = silkmvc/core/OOP.lua \
     silkmvc/core/std.lua \
-    silkmvc/core/extra_mime.lua \
+    silkmvc/core/mimes.lua \
     silkmvc/core/utils.lua \
-    silkmvc/core/api.lua \
-    silkmvc/core/cif.lua \
+    silkmvc/core/hook.lua \
     silkmvc/core/sqlite.lua
 
 # lua libraris &  modules

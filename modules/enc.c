@@ -208,7 +208,7 @@ static int l_base64_decode(lua_State *L)
     // decode data to a byte array
     lua_new_slice(L, len);
     slice_t *vec = NULL;
-    vec = lua_check_slice(L, 2);
+    vec = lua_check_slice(L, -1);
     len = Base64decode((char *)vec->data, s);
     vec->len = len;
     // lua_pushstring(L,dst);

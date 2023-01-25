@@ -83,6 +83,9 @@ static int l_db_query(lua_State *L)
         int cols = sqlite3_column_count(statement);
         int result = 0;
         int cnt = 1;
+        uint8_t* data = NULL;
+        size_t len = 0;
+        slice_t* vec = NULL;
         // new table for data
         lua_newtable(L);
         while ((result = sqlite3_step(statement)) == SQLITE_ROW)
@@ -91,10 +94,37 @@ static int l_db_query(lua_State *L)
             lua_newtable(L);
             for (int col = 0; col < cols; col++)
             {
-                const char *value = (const char *)sqlite3_column_text(statement, col);
                 const char *name = sqlite3_column_name(statement, col);
                 lua_pushstring(L, name);
-                lua_pushstring(L, value);
+                int type = sqlite3_column_type(statement,col);
+                switch (type)
+                {
+                case SQLITE_INTEGER:
+                    lua_pushnumber(L, sqlite3_column_int64(statement,col));
+                    break;
+                
+                case SQLITE_FLOAT:
+                    lua_pushnumber(L, sqlite3_column_double(statement,col));
+                    break;
+                case SQLITE_BLOB:
+                    data = (uint8_t*)sqlite3_column_blob(statement, col);
+                    len = sqlite3_column_bytes(statement, col);
+                    if(len > 0)
+                    {
+                        lua_new_slice(L, len);
+                        vec = lua_check_slice(L, -1);
+                        (void)memcpy(vec->data, data, len);
+                    }
+                    else
+                    {
+                        lua_pushnil(L);
+                    }
+                    break;
+                default:
+                    lua_pushstring(L, (const char *)sqlite3_column_text(statement, col));
+                    break;
+                }
+                
                 lua_settable(L, -3);
             }
             lua_settable(L, -3);

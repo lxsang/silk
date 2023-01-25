@@ -7,6 +7,7 @@ end
 function Router:initialize()
     self.routes = {}
     self.remaps = {}
+    self.path = CONTROLLER_ROOT
 end
 
 --function Router:setArgs(args)
@@ -25,7 +26,7 @@ function Router:infer(url)
     -- if user dont provide the url, try to infer it
     -- from the REQUEST
     url = url or REQUEST.r or ""
-    url = std.trim(url, "/")
+    url = ulib.trim(url, "/")
     local args = explode(url, "/")
     local data = {
         name = "index",
@@ -79,7 +80,7 @@ function Router:infer(url)
         end
     end
 
-    self:log("Controller: " .. data.controller.class .. ", action: "..data.action..", args: ".. JSON.encode(data.args))
+    self:info("Controller: " .. data.controller.class .. ", action: "..data.action..", args: ".. JSON.encode(data.args))
     return data
 end
 
@@ -90,7 +91,7 @@ function Router:delegate()
     data.controller.main = true
     views.__main__ = self:call(data)
     if not views.__main__ then
-        --self:error("No view available for this action")
+        self:info("No view available for action: %s:%s", data.controller.class, data.action)
         return
     end
     -- get all visible routes
@@ -106,8 +107,8 @@ function Router:delegate()
         table.insert( view_args, k )
         table.insert( view_argv, v )
     end
-
-    local fn, e = loadscript(VIEW_ROOT .. DIR_SEP .. self.registry.layout .. DIR_SEP .. "layout.ls", view_args)
+    local script_path = VIEW_ROOT .. DIR_SEP .. self.registry.layout .. DIR_SEP .. "layout.ls"
+    local fn, e = loadscript(script_path, view_args)
     html()
     if fn then
         local r, o = pcall(fn, table.unpack(view_argv))
@@ -116,7 +117,7 @@ function Router:delegate()
         end
     else
         e = e or ""
-        self:error("The index page is not found for layout: " .. self.registry.layout..": "..e)
+        self:error("The index page is not found for layout (%s: %s): %s" ,self.registry.layout, script_path,e)
     end
 end
 
@@ -125,9 +126,8 @@ function Router:dependencies(url)
         return {}
     end
     local list = {}
-    --self:log("comparing "..url)
     for k, v in pairs(self.routes[self.registry.layout]) do
-        v.url = std.trim(v.url, "/")
+        v.url = ulib.trim(v.url, "/")
         if v.visibility == "ALL" then
             list[k] = v.url
         elseif v.visibility.routes then

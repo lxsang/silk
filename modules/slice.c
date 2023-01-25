@@ -1,4 +1,5 @@
 #include "lua/lualib.h"
+static int l_slice_send_to(lua_State* L);
 
 void lua_new_light_slice(lua_State *L, int n, char *ptr)
 {
@@ -6,6 +7,7 @@ void lua_new_light_slice(lua_State *L, int n, char *ptr)
     slice_t *a = (slice_t *)lua_newuserdata(L, nbytes);
     a->len = n;
     a->data = ptr;
+    a->magic = lua_slice_magic();
     luaL_getmetatable(L, SLICE);
     lua_setmetatable(L, -2);
 }
@@ -78,6 +80,14 @@ static int l_slice_write(lua_State *L)
     return 1;
 }
 
+static int l_slice_ptr(lua_State *L)
+{
+    slice_t *a = lua_check_slice(L, 1);
+    lua_pushnumber(L, (size_t)a);
+    return 1;
+}
+
+
 static int l_slice_index(lua_State *L)
 {
     if(lua_isnumber(L,2))
@@ -91,9 +101,17 @@ static int l_slice_index(lua_State *L)
         {
             lua_pushcfunction(L, l_get_slice_size);
         }
-        else if(strcmp(string, "write") == 0)
+        else if(strcmp(string, "fileout") == 0)
         {
             lua_pushcfunction(L, l_slice_write);
+        }
+        else if(strcmp(string,"out") == 0)
+        {
+            lua_pushcfunction(L, l_slice_send_to);
+        }
+        else if(strcmp(string,"ptr") == 0)
+        {
+            lua_pushcfunction(L, l_slice_ptr);
         }
         else
         {
@@ -117,6 +135,16 @@ static int l_slice_to_string(lua_State *L)
     lua_pushstring(L, d);
     if (d)
         free(d);
+    return 1;
+}
+
+static int l_slice_send_to(lua_State* L)
+{
+    slice_t *a = lua_check_slice(L, 1);
+    int fd = (int) luaL_checknumber(L, 2);
+    uint16_t id = (uint16_t) luaL_checknumber(L, 3);
+
+    lua_pushboolean(L, fcgi_send_slice(fd, id, a->data, a->len) == 0);
     return 1;
 }
 

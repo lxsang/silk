@@ -1,30 +1,43 @@
-Logger = Object:extends{levels = {}}
+Logger = Object:extends{}
+
+Logger.ERROR = 1
+Logger.WARN = 2
+Logger.INFO = 3
+Logger.DEBUG = 4
+Logger.handles = {
+    [1] = LOG_ERROR,
+    [2] = LOG_WARN,
+    [3] = LOG_INFO,
+    [4] = LOG_DEBUG
+}
 
 function Logger:initialize()
-end
-
-function Logger:log(msg,level)
-    if self.levels[level] and ulib.exists(LOG_ROOT) then
-        local path = LOG_ROOT..DIR_SEP..level..'.txt'
-        local f = io.open(path, 'a')
-        local text = '['..level.."]: "..msg
-        if f then
-            f:write(text..'\n')
-            f:close()
-        end
-        print(text)
+    if not self.level then
+        self.level = Logger.INFO
     end
 end
 
-function Logger:info(msg)
-    self:log(msg, "INFO")
+function Logger:log(verb,msg,...)
+    local level = verb
+    if level > self.level then return end
+    if level > Logger.DEBUG then
+        level = Logger.DEBUG
+    end
+    Logger.handles[level](msg,...)
 end
 
-function Logger:debug(msg)
-    self:log(msg, "DEBUG")
+function Logger:info(msg,...)
+    self:log(Logger.INFO, msg,...)
 end
 
+function Logger:debug(msg,...)
+    self:log(Logger.DEBUG, msg,...)
+end
 
-function Logger:error(msg)
-    self:log(msg, "ERROR")
+function Logger:error(msg,...)
+    self:log(Logger.ERROR, msg,...)
+end
+
+function Logger:warn(msg,...)
+    self:log(Logger.WARN, msg,...)
 end

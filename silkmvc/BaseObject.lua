@@ -4,31 +4,34 @@ function BaseObject:subclass(name, args)
     _G[name].class = name
 end
 
-function BaseObject:log(msg, level)
-    level = level or "INFO"
+function BaseObject:log(level,msg,...)
     if self.registry.logger then
-        self.registry.logger:log(msg,level)
+        self.registry.logger:log(level, msg,...)
     end
 end
 
-function BaseObject:debug(msg)
-    self:log(msg, "DEBUG")
+function BaseObject:debug(msg,...)
+    self:log(Logger.DEBUG, msg,...)
+end
+
+function BaseObject:info(msg,...)
+    self:log(Logger.INFO, msg,...)
+end
+
+function BaseObject:warn(msg,...)
+    self:log(Logger.WARN, msg,...)
 end
 
 function BaseObject:print()
-    print(self.class)
+    self:debug(self.class)
 end
 
-function BaseObject:error(msg, trace)
+function BaseObject:error(msg,...)
     html()
     --local line = debug.getinfo(1).currentline
-    echo(msg)
-    self:log(msg,"ERROR")
-    if trace then
-        debug.traceback=nil
-        error(msg)
-    else
-        error(msg)
-    end
+    local emsg = string.format(msg or "ERROR",...)
+    echo(emsg)
+    self:log(Logger.ERROR, msg,...)
+    error(emsg)
     return false
 end

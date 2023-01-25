@@ -41,11 +41,12 @@ function BaseController:switchLayout(name)
     if self.main then
         self.registry.layout = name
     else
-        self:log("Cannot switch layout since the controller "..self.class.." is not the main controller")
+        self:warn("Cannot switch layout since the controller "..self.class.." is not the main controller")
     end
 end
 
 function BaseController:setSession(key, value)
+
     SESSION[key] = value
 end
 function BaseController:getSession(key)
