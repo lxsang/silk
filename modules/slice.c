@@ -41,8 +41,11 @@ static unsigned char *get_sel(lua_State *L)
 {
     slice_t *a = lua_check_slice(L, 1);
     int index = luaL_checknumber(L, 2);
-    luaL_argcheck(L, 1 <= index && index <= a->len, 2,
-                  "index out of range");
+    if(index < 1 || index > a->len)
+    {
+        return NULL;
+    }
+    //luaL_argcheck(L, 1 <= index && index <= a->len, 2,"index out of range");
 
     /* return element address */
     return &a->data[index - 1];
@@ -51,7 +54,11 @@ static unsigned char *get_sel(lua_State *L)
 static int l_set_slice(lua_State *L)
 {
     unsigned char value = luaL_checknumber(L, 3);
-    *get_sel(L) = value;
+    char* v = get_sel(L);
+    if(v)
+    {
+        *v = value;
+    }
     return 0;
 }
 
@@ -92,7 +99,15 @@ static int l_slice_index(lua_State *L)
 {
     if(lua_isnumber(L,2))
     {
-        lua_pushnumber(L, *get_sel(L));
+        const char* v = get_sel(L);
+        if(v)
+        {
+            lua_pushnumber(L, *v);
+        }
+        else
+        {
+            lua_pushnil(L);
+        }
     }
     else if(lua_isstring(L,2))
     {
@@ -157,6 +172,7 @@ static const struct luaL_Reg slicelib[] = {
     {"__index", l_slice_index},
     {"__newindex", l_set_slice},
     {"__tostring", l_slice_to_string},
+    {"__len", l_get_slice_size},
     {NULL, NULL}};
 
 int luaopen_slice(lua_State *L)
