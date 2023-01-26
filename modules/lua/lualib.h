@@ -53,7 +53,7 @@ void lua_new_slice(lua_State*L, int n)
     a->magic = lua_slice_magic();
     luaL_getmetatable(L, SLICE);
     lua_setmetatable(L, -2);
-
+    (void)memset(a->data,0,n);
     a->len = n;
 }
 slice_t * lua_check_slice(lua_State *L, int idx)
