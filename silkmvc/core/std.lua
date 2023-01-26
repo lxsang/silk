@@ -167,35 +167,35 @@ function std.is_file(f)
     return ulib.is_dir(f) == false
 end
 
--- TODO provide web socket support
--- use coroutine to read socket message
+-- TODO use coroutine to read socket message
 std.ws = {}
 function std.ws.header()
-    local h = std.ws_header(HTTP_REQUEST.id)
-    if (h) then
-        return h -- std.readOnly(h)
-    else
-        return nil
-    end
+    if not fcgio:is_ws() then return nil end
+    return fcgio:ws_header()
 end
 
 function std.ws.read(h)
-    return std.ws_read(HTTP_REQUEST.id, h)
+    if not fcgio:is_ws() then return nil end
+    return fcgio:ws_read(h)
 end
-function std.ws.swrite(s)
-    std.ws_t(HTTP_REQUEST.id, s)
+function std.ws.t(...)
+    if not fcgio:is_ws() then return nil end
+    fcgio:ws_send(false,...)
 end
-function std.ws.fwrite(s)
-    std.ws_f(HTTP_REQUEST.id, s)
+function std.ws.f(s)
+    if not fcgio:is_ws() then return nil end
+    fcgio:send_file(s)
 end
-function std.ws.write_bytes(arr)
-    std.ws_b(HTTP_REQUEST.id, arr)
+function std.ws.b(...)
+    if not fcgio:is_ws() then return nil end
+    fcgio:ws_send(true,...)
 end
 function std.ws.enable()
-    return HTTP_REQUEST ~= nil and HTTP_REQUEST.request["__web_socket__"] == "1"
+    return fcgio:is_ws()
 end
 function std.ws.close(code)
-    std.ws_close(HTTP_REQUEST.id, code)
+    if not fcgio:is_ws() then return nil end
+    fcgio:ws_close(code)
 end
 std.ws.TEXT = 1
 std.ws.BIN = 2
