@@ -132,6 +132,11 @@ function std.f(path)
     fcgio:send_file(path)
 end
 
+function std.t(...)
+    echo(...)
+end
+
+
 function std.html()
     std.header("Content-Type", "text/html; charset=utf-8")
     std.header_flush()
