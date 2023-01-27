@@ -91,7 +91,7 @@ function Router:delegate()
     data.controller.main = true
     views.__main__ = self:call(data)
     if not views.__main__ then
-        self:info("No view available for action: %s:%s", data.controller.class, data.action)
+        self:debug("No view available for action: %s:%s", data.controller.class, data.action)
         return
     end
     -- get all visible routes

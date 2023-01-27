@@ -43,11 +43,15 @@ function std.extra_mime(name)
     local ext = utils.ext(name)
     local mpath = __ROOT__ .. "/" .. "mimes.json"
     if WWW_ROOT and not ulib.exists(mpath) then
-        local mpath = WWW_ROOT .. "/" .. "mimes.json"
+        LOG_DEBUG("No extra mimes found in %s", mpath)
+        mpath = WWW_ROOT .. "/" .. "mimes.json"
+        LOG_DEBUG("Trying to looking for extra mimes in: %s", mpath)
     end
     local xmimes = {}
     if ulib.exists(mpath) then
         xmimes = JSON.decodeFile(mpath)
+    else
+        LOG_DEBUG("No extra mimes")
     end
     if (name:find("Makefile$")) then
         return "text/makefile", false
