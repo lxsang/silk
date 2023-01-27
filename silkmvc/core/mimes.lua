@@ -42,6 +42,9 @@ end
 function std.extra_mime(name)
     local ext = utils.ext(name)
     local mpath = __ROOT__ .. "/" .. "mimes.json"
+    if WWW_ROOT and not utils.file_exists(mpath) then
+        local mpath = WWW_ROOT .. "/" .. "mimes.json"
+    end
     local xmimes = {}
     if utils.file_exists(mpath) then
         xmimes = JSON.decodeFile(mpath)
