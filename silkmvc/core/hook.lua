@@ -199,6 +199,15 @@ if HEADER["Cookie"] then
     end
 end
 
+-- multipart request
+REQUEST.multipart = {}
+for key,val in pairs(_SERVER) do
+    local s,e,v = key:find("MULTIPART%[(.*)%]")
+    if s then
+        REQUEST.multipart[v] = val
+    end
+end
+
 local code, error = decode_request_data()
 
 if code ~= 0 then
