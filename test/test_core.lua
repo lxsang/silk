@@ -392,5 +392,41 @@ end)
 test("sha1 encode", function()
     expect(enc.sha1("this is a test"), "fa26be19de6bff93f70bc2308434e4a440bbad02")
 end)
+
+test("SQL Generator", function()
+    local o = {
+        table_name = "database",
+        where = {
+            ["id$gte"] = 10,
+            user = "dany'",
+            ["$or"] = {
+                email = "test@mail.com",
+                ["age$ne"] = 30,
+                ["$and"] = {
+                    ["birth$ne"] = 1986,
+                    ["age$between"] = {10,20},
+                    ["age$not_in"] =  {20,30},
+                    ["name$like"] = "%LE"
+                }
+            }
+        },
+        fields = {'user.name', 'id', 'email'},
+        order = {'name$asc', "id$desc"},
+        joins = { 
+            cid = 'Category.id',
+            did ='Country.id'
+        }
+    }
+    local generator = SQLQueryGenerator:new(o)
+
+    local r,sql = generator:sql_select()
+    assert(r == true, sql)
+    print(sql)
+
+    r,sql = generator:sql_delete()
+    assert(r == true, sql)
+    print(sql)
+
+end)
 --- run all unit tests
 run()
