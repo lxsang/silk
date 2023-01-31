@@ -127,6 +127,7 @@ function SQLQueryGenerator:sql_fields()
 end
 
 function SQLQueryGenerator:sql_order()
+    if not self.order then return nil end
     local tb = {}
     for k, v in ipairs(self.order) do
         local arr = explode(v, "$")
