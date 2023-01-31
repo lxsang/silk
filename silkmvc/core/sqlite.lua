@@ -40,22 +40,22 @@ function SQLQueryGenerator:sql_select()
         return v, f
     end
     local segments = {"SELECT"}
-    if f then
+    if f and f~= "" then
         table.insert(segments, f)
     else
         table.insert(segments, "*")
     end
     table.insert(segments, "FROM")
     table.insert(segments, self.table_name)
-    if j then
+    if j and j~= "" then
         table.insert(segments, j)
     end
-    if w then
+    if w  and j ~="" then
         table.insert(segments, "WHERE")
         table.insert(segments, w)
     end
 
-    if o then
+    if o and o ~= "" then
         table.insert(segments, "ORDER BY")
         table.insert(segments, o)
     end
@@ -71,10 +71,10 @@ function SQLQueryGenerator:sql_delete()
     local segments = {"DELETE"}
     table.insert(segments, "FROM")
     table.insert(segments, self.table_name)
-    if j then
+    if j and j ~= "" then
         table.insert(segments, j)
     end
-    if w then
+    if w and w ~= "" then
         table.insert(segments, "WHERE")
         table.insert(segments, w)
     end
