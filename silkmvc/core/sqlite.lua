@@ -60,6 +60,10 @@ function SQLQueryGenerator:sql_select()
         table.insert(segments, o)
     end
 
+    if self.limit then
+        table.insert(segments, "LIMIT "..self.limit)
+    end
+
     return true, table.concat(segments, " ")
 end
 
@@ -161,7 +165,13 @@ function SQLQueryGenerator:sql_where(cond, obj)
         if k == "$and" or k == "$or" then
             table.insert(conds, self:sql_where(k, v))
         else
-            table.insert(conds, self:binary(k, v))
+            if type(v) == "table" and not (k:match("%$.*in") or k:match("%$.*between") ) then
+                for i,el in ipairs(v) do
+                    table.insert(conds, self:binary(k, el))
+                end
+            else
+                table.insert(conds, self:binary(k, v))
+            end
         end
     end
 
@@ -170,7 +180,7 @@ end
 
 function SQLQueryGenerator:parse_value(v, types)
     if not types[type(v)] then
-        self:error("Type error: unexpected type %d", type(v))
+        self:error("Type error: unexpected type %s", type(v))
     end
     if type(v) == "number" then
         return tostring(v)

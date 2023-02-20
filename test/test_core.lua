@@ -401,6 +401,7 @@ test("SQL Generator", function()
             user = "dany'",
             ["$or"] = {
                 email = "test@mail.com",
+                age = {10,20,30,40},
                 ["age$ne"] = 30,
                 ["$and"] = {
                     ["birth$ne"] = 1986,
