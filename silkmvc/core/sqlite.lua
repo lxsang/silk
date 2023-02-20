@@ -127,7 +127,7 @@ function SQLQueryGenerator:sql_fields()
     for k, v in ipairs(self.fields) do
         arr[k] = self:infer_field(v)
     end
-    return string.format("(%s)", table.concat(arr, ","))
+    return string.format("%s", table.concat(arr, ","))
 end
 
 function SQLQueryGenerator:sql_order()
