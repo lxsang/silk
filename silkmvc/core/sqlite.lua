@@ -281,22 +281,16 @@ end
 
 function DBModel:insert(name, m)
     local keys = {}
-    local values = {}
-    for k, v in pairs(m) do
+    local vals = {}
+    local gen = SQLQueryGenerator:new({})
+    for k,v in pairs(m) do
         if k ~= "id" then
-            table.insert(keys, k)
-            if type(v) == "number" then
-                table.insert(values, v)
-            elseif type(v) == "boolean" then
-                table.insert(values, v and 1 or 0)
-            else
-                local t = "\"" .. v:gsub('"', '""') .. "\""
-                table.insert(values, t)
-            end
+            table.insert(keys,k)
+            table.insert(vals,gen:parse_value(v, {[type(v)] = true}))
         end
     end
-    local sql = "INSERT INTO " .. name .. " (" .. table.concat(keys, ',') .. ') VALUES ('
-    sql = sql .. table.concat(values, ',') .. ');'
+    local sql = string.format("INSERT INTO  %s (%s) VALUES(%s)", name, table.concat(keys,","), table.concat(vals,","))
+    LOG_DEBUG("Execute query: [%s]", sql)
     return self:exec(sql)
 end
 
@@ -322,30 +316,21 @@ function DBModel:getAll(name)
 end
 
 function DBModel:find(name, cond)
-    local cnd = "1=1"
-    local sel = "*"
-    if cond.exp then
-        cnd = self:gencond(cond.exp)
+    local filter = {}
+    if cond then
+        filter = cond
     end
-    if cond.order then
-        cnd = cnd .. " ORDER BY "
-        local l = {}
-        local i = 1
-        for k, v in pairs(cond.order) do
-            l[i] = k .. " " .. v
-            i = i + 1
-        end
-        cnd = cnd .. table.concat(l, ",")
+    filter.table_name = name
+    
+    local generator = SQLQueryGenerator:new(filter)
+    local r,sql = generator:sql_select()
+    if not r then
+        LOG_ERROR(sql)
+        return nil,sql
     end
-    if cond.limit then
-        cnd = cnd .. " LIMIT " .. cond.limit
-    end
-    if cond.fields then
-        sel = table.concat(cond.fields, ",")
-        -- print(sel)
-    end
-    -- print(cnd)
-    local data = self:query(string.format("SELECT %s FROM %s WHERE %s", sel, name, cnd))
+    LOG_DEBUG("Execute query: %s", sql);
+
+    local data = self:query(sql)
     if data == nil then
         return nil
     end
@@ -379,17 +364,15 @@ end
 function DBModel:update(name, m)
     local id = m['id']
     if id ~= nil then
-        local lst = {}
-        for k, v in pairs(m) do
-            if (type(v) == "number") then
-                table.insert(lst, k .. "=" .. v)
-            elseif type(v) == "boolean" then
-                table.insert(lst, k .. "=" .. (v and 1 or 0))
-            else
-                table.insert(lst, k .. "=\"" .. v:gsub('"', '""') .. "\"")
+        local tb = {}
+        local gen = SQLQueryGenerator:new({})
+        for k,v in pairs(m) do
+            if k ~= "id" then
+                table.insert(tb, string.format("%s=%s", k, gen:parse_value(v, {[type(v)] = true})))
             end
         end
-        local sql = "UPDATE " .. name .. " SET " .. table.concat(lst, ",") .. " WHERE id=" .. id .. ";"
+        local sql = string.format("UPDATE  %s SET %s  WHERE id = %d", name, table.concat(tb,","), m.id)
+        LOG_DEBUG("Execute query: [%s]", sql)
         return self:exec(sql)
     end
     return false
@@ -403,29 +386,20 @@ function DBModel:deleteByID(name, id)
     local sql = "DELETE FROM " .. name .. " WHERE id=" .. id .. ";"
     return self:exec(sql)
 end
-function DBModel:gencond(o)
-    for k, v in pairs(o) do
-        if k == "and" or k == "or" then
-            local cnd = {}
-            local i = 1
-            for k1, v1 in pairs(v) do
-                cnd[i] = self:gencond(v1)
-                i = i + 1
-            end
-            return " (" .. table.concat(cnd, " " .. k .. " ") .. ") "
-        else
-            for k1, v1 in pairs(v) do
-                local t = type(v1)
-                if (t == "string") then
-                    return " (" .. k1 .. " " .. k .. ' "' .. v1:gsub('"', '""') .. '") '
-                end
-                return " (" .. k1 .. " " .. k .. " " .. v1 .. ") "
-            end
-        end
-    end
-end
+
 function DBModel:delete(name, cond)
-    local sql = "DELETE FROM " .. name .. " WHERE " .. self:gencond(cond) .. ";"
+    local filter = {}
+    if cond then
+        filter = cond
+    end
+    filter.table_name = name
+
+    local generator = SQLQueryGenerator:new(filter)
+    local r,sql = generator:sql_delete()
+    if not r then
+        return error(sql)
+    end
+    LOG_DEBUG("Execute query: %s", sql);
     return self:exec(sql)
 end
 
