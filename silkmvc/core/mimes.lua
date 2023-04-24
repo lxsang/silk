@@ -76,6 +76,9 @@ function std.extra_mime(name)
 end
 
 function std.mimeOf(name)
+    if ulib.is_dir(name) then
+        return "dir"
+    end
     local mime = std.mime(utils.ext(name))
     if mime ~= "application/octet-stream" then
         return mime
