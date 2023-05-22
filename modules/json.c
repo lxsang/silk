@@ -1,7 +1,8 @@
 #include "lua/lualib.h"
 #include "3rd/jsmn/jsmn.h"
 
-#define MAXTOKEN 8192
+// support upto 65536 tokens which is around of 1MB memory
+#define MAXTOKEN 65536
 
 // define unescape sequence
 
@@ -246,7 +247,8 @@ static int l_json_parser(lua_State *L, const char* s)
 	int r = jsmn_parse(&p, s, strlen(s), t, sizeof(t)/sizeof(t[0]));
 	if (r < 0) {
 		lua_pushnil(L);
-		return 0;
+		lua_pushnumber(L,r);
+		return 2;
 	}
 	token_to_object(L,t,s,0);
 	return 1;
