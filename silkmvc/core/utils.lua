@@ -20,7 +20,7 @@ function utils.is_array(table)
     return true
 end
 
-function utils.escape(s)
+function utils.escape(s, ignore_percent)
     local replacements = {
         ["\\"] = "\\\\",
         ['"'] = '\\"',
@@ -28,9 +28,11 @@ function utils.escape(s)
         ["\t"] = "\\t",
         ["\b"] = "\\b",
         ["\f"] = "\\f",
-        ["\r"] = "\\r",
-        ["%"] = "%%"
+        ["\r"] = "\\r"
     }
+    if not ignore_percent then
+        replacements["%"] = "%%"
+    end
     return (s:gsub("[\\'\"\n\t\b\f\r%%]", replacements))
 end
 
@@ -194,7 +196,8 @@ function JSON.encode(obj)
         end
     elseif t == 'string' then
         -- print('"'..utils.escape(obj)..'"')
-        return '"' .. utils.escape(obj) .. '"'
+        -- ignore % escape as this is for a LUA using
+        return '"' .. utils.escape(obj, true) .. '"'
     elseif t == 'boolean' or t == 'number' then
         return tostring(obj)
     elseif obj == nil then

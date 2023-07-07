@@ -126,17 +126,34 @@ function loadscript(file, args)
     end
 end
 
--- logging helpers
+local __MSG = function(fmt,...)
+    local va = {...}
+    if va then
+        local out = {}
+        for i,v in ipairs(va) do
+            local esc = v:gsub("[%%]", {["%"] = "%%"})
+            table.insert(out, esc)
+        end
+        va = out
+    end
+    local log_msg = fmt
+    local ret,msg = pcall(function() return string.format(fmt, table.unpack(va)) end)
+    if msg then
+       log_msg = msg
+    end
+    return log_msg
+end
+
 function LOG_INFO(fmt, ...)
-    fcgio:log_info(string.format(fmt or "LOG", ...))
+    fcgio:log_info(__MSG(fmt or "INFO",table.unpack({...})))
 end
 
 function LOG_ERROR(fmt, ...)
-    fcgio:log_error(string.format(fmt or "ERROR", ...))
+    fcgio:log_error(__MSG(fmt or "ERROR",table.unpack({...})))
 end
 
 function LOG_DEBUG(fmt, ...)
-    fcgio:log_debug(string.format(fmt or "ERROR", ...))
+    fcgio:log_debug(__MSG(fmt or "DEBUG",table.unpack({...})))
 end
 
 function LOG_WARN(fmt, ...)
