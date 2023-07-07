@@ -128,18 +128,12 @@ end
 
 local __MSG = function(fmt,...)
     local va = {...}
-    if va then
-        local out = {}
-        for i,v in ipairs(va) do
-            local esc = v:gsub("[%%]", {["%"] = "%%"})
-            table.insert(out, esc)
-        end
-        va = out
-    end
     local log_msg = fmt
     local ret,msg = pcall(function() return string.format(fmt, table.unpack(va)) end)
-    if msg then
+    if ret then
        log_msg = msg
+    else
+        log_msg = string.format("Error processing format string [%s]: %s", fmt, msg)
     end
     return log_msg
 end
