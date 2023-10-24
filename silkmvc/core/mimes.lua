@@ -37,10 +37,10 @@ setmetatable(default_mimes, {
 	end
 })
 function std.mime(ext)
-	return default_mimes[ext]
+	return default_mimes[ext:lower()]
 end
 function std.extra_mime(name)
-    local ext = utils.ext(name)
+    local ext = utils.ext(name):lower()
     local mpath = __ROOT__ .. "/" .. "mimes.json"
     if WWW_ROOT and not ulib.exists(mpath) then
         LOG_DEBUG("No extra mimes found in %s", mpath)
