@@ -40,7 +40,10 @@ function std.mime(ext)
 	return default_mimes[ext:lower()]
 end
 function std.extra_mime(name)
-    local ext = utils.ext(name):lower()
+    local ext = utils.ext(name)
+    if ext then
+        ext = ext:lower()
+    end
     local mpath = __ROOT__ .. "/" .. "mimes.json"
     if WWW_ROOT and not ulib.exists(mpath) then
         LOG_DEBUG("No extra mimes found in %s", mpath)
@@ -79,7 +82,11 @@ function std.mimeOf(name)
     if ulib.is_dir(name) then
         return "dir"
     end
-    local mime = std.mime(utils.ext(name))
+    local ext = utils.ext(name)
+    if not ext then
+        return "application/octet-stream", true
+    end
+    local mime = std.mime(ext)
     if mime ~= "application/octet-stream" then
         return mime
     else
