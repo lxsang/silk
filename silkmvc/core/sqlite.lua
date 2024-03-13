@@ -13,6 +13,13 @@ sqlite.getdb = function(name)
         LOG_ERROR("Invalid database name %s", name)
         return nil
     else
+        -- default db path is /var/silk/
+        if not ulib.exists(__api__.dbpath) then
+            if not ulib.mkdir(__api__.dbpath) then
+                LOG_ERROR("Unable to create DB path: %s", __api__.dbpath)
+                return nil
+            end
+        end
         return sqlite.db(__api__.dbpath .. "/" .. name .. ".db")
     end
 end

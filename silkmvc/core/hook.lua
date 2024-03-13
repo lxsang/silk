@@ -4,7 +4,7 @@ math.randomseed(os.time())
 __api__ = {
     apiroot = string.format("%s/lua", _SERVER["LIB_DIR"]),
     tmpdir = _SERVER["TMP_DIR"],
-    dbpath = _SERVER["DB_DIR"]
+    dbpath = "/var/silk"
 }
 -- root dir
 __ROOT__ = _SERVER["DOCUMENT_ROOT"]
