@@ -93,8 +93,19 @@ function AssetController:index(...)
 end
 
 function AssetController:get(...)
-    local path = WWW_ROOT..DIR_SEP..implode({...}, DIR_SEP)
-
+    -- check for access in all parent DIR
+    local DENIEDF = ".DENIED"
+    local curr_dir = WWW_ROOT
+    local args = {...}
+    for i, v in ipairs(explode(args[1], "/")) do
+        LOG_DEBUG("Checking acess for %s", curr_dir)
+        if ulib.exists(curr_dir..DIR_SEP..DENIEDF) then
+            self:error("Access forbidden: "..curr_dir)
+            return false
+        end
+        curr_dir = curr_dir..DIR_SEP..v
+    end
+    local path = WWW_ROOT..DIR_SEP..implode(args, DIR_SEP)
     if self.registry.fileaccess and ulib.exists(path) then
         local mime = std.mimeOf(path)
         if POLICY.mimes[mime] then
