@@ -1,5 +1,5 @@
 sqlite = require("sqlitedb")
-
+ulib = require("ulib")
 if sqlite == nil then
     return 0
 end
@@ -8,7 +8,14 @@ require("silk.core.OOP")
 
 sqlite.getdb = function(name)
     if name:find("%.db$") then
-        return sqlite.db(name)
+        local db = sqlite.db(name)
+        if db then
+            ret,err = ulib.chmod(name,"0600")
+            if not ret then
+                LOG_WARN("Unable to change mode of database file %s: %s", name, err)
+            end
+        end
+        return db
     elseif name:find("/") then
         LOG_ERROR("Invalid database name %s", name)
         return nil
@@ -20,7 +27,15 @@ sqlite.getdb = function(name)
                 return nil
             end
         end
-        return sqlite.db(__api__.dbpath .. "/" .. name .. ".db")
+        local path = __api__.dbpath .. "/" .. name .. ".db"
+        local db = sqlite.db(path)
+        if db then
+            local ret,err = ulib.chmod(path,"0600")
+            if not ret then
+                LOG_WARN("Unable to change mode of database file %s: %s", path)
+            end
+        end
+        return db
     end
 end
 
